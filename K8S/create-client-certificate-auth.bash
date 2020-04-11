@@ -59,7 +59,7 @@ if test -z "$newcontext"; then
     exit 1
 fi
 
-cert_dir="~/.kube/certs/${newcontext}"
+cert_dir="${HOME}/.kube/certs/${newcontext}"
 mkdir -p ${cert_dir}
 cd "${cert_dir}"
 
