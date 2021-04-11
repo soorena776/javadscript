@@ -69,6 +69,8 @@ default_bits = 2048
 prompt = no
 default_md = sha256
 distinguished_name = dn
+req_extensions = req_ext
+x509_extensions = v3_req
 [ dn ]
 CN = ${username}
 O = system:masters
@@ -77,6 +79,13 @@ authorityKeyIdentifier=keyid,issuer:always
 basicConstraints=CA:FALSE
 keyUsage=keyEncipherment,dataEncipherment
 extendedKeyUsage=serverAuth,clientAuth
+[req_ext]
+subjectAltName = @alt_names
+[v3_req]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1   = localhost
+IP.1   = 192.168.9.1
 EOF
 
 openssl genrsa -out ./user.key 4096
