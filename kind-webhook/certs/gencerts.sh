@@ -15,10 +15,15 @@ trap cleanup EXIT # cleanup on exit
 
 
 context=
+mode=
 while [ $# -gt 0 ]; do
   case ${1} in
       --context)
           context="$2"
+          shift
+          ;;
+      --mode)
+          mode="$2"
           shift
           ;;
       *)
@@ -29,17 +34,22 @@ while [ $# -gt 0 ]; do
 done
 [ -z "${context}" ] && echo "ERROR: --context flag is required to target the kubernetes cluster" && exit
 
+
 # the context should be configured against a kind cluster. 
 if [ `kubectl config current-context` != "${context}" ]; then echo "not configured against the specified context ${context}" && exit 1; fi
 kubectl cluster-info
 
-# get the localhost ip address within a docker container (where kube-apiserver is running)
-# TODO: make this more robust robust and validate
-localhostIP=$(sudo ip addr show docker0 | sed -n 's|.*inet \([0-9\.]*\).*|\1|p')
 servicePort=8099
+localhostIP=127.0.0.1
 
-# replace the url in the webhook configuration yaml for localhost
-sed -i "s|url: .*|url: https://${localhostIP}:${servicePort}/hook|" $DEPLOYDIR/localhost/webhook.yaml
+if [ "${mode}" == "kind-local" ]
+then
+  # get the localhost ip address within a docker container (where kube-apiserver is running)
+  # TODO: make this more robust robust and validate
+  localhostIP=$(sudo ip addr show docker0 | sed -n 's|.*inet \([0-9\.]*\).*|\1|p')
+  # replace the url in the webhook configuration yaml for localhost
+  sed -i "s|url: .*|url: https://${localhostIP}:${servicePort}/hook|" $DEPLOYDIR/localhost/webhook.yaml
+fi
 
 username=testing-wh
 # create the csr config
